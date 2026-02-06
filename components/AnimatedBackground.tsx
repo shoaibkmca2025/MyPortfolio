@@ -292,26 +292,15 @@ const AnimatedBackground: React.FC = () => {
       });
 
       // 5. Camera Animation Logic
-      // Dynamic Camera Offset: Ensures we always view the lit side of the planet
       const getSmartCameraOffset = (planetPos: THREE.Vector3, planetRadius: number, type: 'close' | 'superClose' | 'wide' = 'close') => {
-        const scaledRadius = planetRadius * 2.5; // Account for the new visual scale
-        
-        let distMult = 5.0; // Wide
-        if (type === 'close') distMult = 2.5; // Closer landing
-        if (type === 'superClose') distMult = 1.8; // Deep immersion for reading
-
-        const dist = scaledRadius * distMult;
-        
-        // Vector from Planet to Sun (Sun is at 0,0,0)
+        const scaledRadius = planetRadius * 2.5;
+        const fov = camera.fov * Math.PI / 180;
+        const coverage = type === 'superClose' ? 0.6 : type === 'close' ? 0.4 : 0.25;
+        const dist = (scaledRadius / Math.tan(fov / 2)) * (1 / coverage);
         const toSun = new THREE.Vector3(0, 0, 0).sub(planetPos).normalize();
-        
-        // Rotate slightly so we aren't directly blocking the sun (cinematic 3/4 view)
-        const angle = type === 'superClose' ? Math.PI / 5 : Math.PI / 6; // Wider angle for safety
+        const angle = type === 'superClose' ? Math.PI / 5 : Math.PI / 6;
         const offsetDir = toSun.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), angle); 
-        
-        // Add some elevation (Y-axis) - Lower elevation for massive scale feel
         const elevation = type === 'superClose' ? scaledRadius * 0.2 : scaledRadius * 0.5;
-        
         return offsetDir.multiplyScalar(dist).add(new THREE.Vector3(0, elevation, 0));
       };
 
@@ -522,23 +511,16 @@ const AnimatedBackground: React.FC = () => {
         PLANET_DATA.forEach(data => {
             const grp = planets[data.id];
             if (grp) {
-                // Self Rotation (Day/Night Cycle)
                 const rotSpeed = (data as any).rotationSpeed || 0.005;
-                const boost = 1 + Math.min(Math.abs(scrollVel.v) * 0.0002, 0.3);
-                (grp as any).mesh.rotation.y += rotSpeed * boost;
-                
-                // Clouds rotate slightly faster than surface for dynamic effect
-                if ((grp as any).clouds) (grp as any).clouds.rotation.y += rotSpeed * 1.15 * boost;
-                
-                // Moon Rotation (Orbit around Earth)
+                (grp as any).mesh.rotation.y += rotSpeed;
+                if ((grp as any).clouds) (grp as any).clouds.rotation.y += rotSpeed * 1.15;
                 if ((grp as any).moonGroup) {
                     (grp as any).moonGroup.rotation.y += 0.005; 
                 }
-                
                 const a = (grp as any).distance;
                 const e = (grp as any).ecc;
                 const b = a * (1 - e);
-                const ang = (grp as any).baseAngle + t * data.speed * boost;
+                const ang = (grp as any).baseAngle + t * data.speed;
                 grp.position.set(Math.cos(ang) * a, 0, Math.sin(ang) * b);
                 if ((grp as any).ring) {
                   (grp as any).ring.rotation.z += 0.0004;
