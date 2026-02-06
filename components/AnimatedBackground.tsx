@@ -33,8 +33,8 @@ const PLANET_DATA = [
   { id: 'venus', name: 'Venus', radius: 6.0, distance: 90, speed: 0.015, rotationSpeed: -0.0001, angle: 1.5, tex: ASSETS.venus, clouds: ASSETS.venusAtmosphere, color: 0xE3BB76, roughness: 0.5, tilt: 3.10, ecc: 0.0067 },
   { id: 'earth', name: 'Earth', radius: 6.3, distance: 130, speed: 0.01, rotationSpeed: 0.005, angle: 2.5, tex: ASSETS.earth, clouds: ASSETS.earthClouds, spec: ASSETS.earthSpec, normal: ASSETS.earthNormal, color: 0x2233FF, roughness: 0.6, hasMoon: true, tilt: 0.409, ecc: 0.0167 },
   { id: 'mars', name: 'Mars', radius: 3.3, distance: 170, speed: 0.008, rotationSpeed: 0.004, angle: 3.5, tex: ASSETS.mars, normal: ASSETS.marsNormal, color: 0xDC7D5A, roughness: 0.8, tilt: 0.437, ecc: 0.0934 },
-  { id: 'jupiter', name: 'Jupiter', radius: 69.9, distance: 320, speed: 0.002, rotationSpeed: 0.012, angle: 4.5, tex: ASSETS.jupiter, color: 0xBCAB8B, roughness: 0.4, tilt: 0.054, ecc: 0.048 },
-  { id: 'saturn', name: 'Saturn', radius: 58.2, distance: 500, speed: 0.0018, rotationSpeed: 0.011, angle: 5.5, tex: ASSETS.saturn, ring: ASSETS.saturnRing, color: 0xC5AB6E, roughness: 0.4, ringSize: 1.8, tilt: 0.466, ecc: 0.054 },
+  { id: 'jupiter', name: 'Jupiter', radius: 69.9, distance: 320, speed: 0.002, rotationSpeed: 0.012, angle: 4.5, tex: ASSETS.jupiter, color: 0xBCAB8B, roughness: 0.4, tilt: 0.054, ecc: 0.048, visualScale: 1.7 },
+  { id: 'saturn', name: 'Saturn', radius: 58.2, distance: 500, speed: 0.0018, rotationSpeed: 0.011, angle: 5.5, tex: ASSETS.saturn, ring: ASSETS.saturnRing, color: 0xC5AB6E, roughness: 0.4, ringSize: 1.8, tilt: 0.466, ecc: 0.054, visualScale: 1.6 },
   { id: 'uranus', name: 'Uranus', radius: 25.3, distance: 700, speed: 0.001, rotationSpeed: -0.007, angle: 6.2, tex: ASSETS.uranus, color: 0x93B8BE, roughness: 0.5, tilt: 1.707, ecc: 0.047 },
   { id: 'neptune', name: 'Neptune', radius: 24.6, distance: 900, speed: 0.0009, rotationSpeed: 0.008, angle: 0.5, tex: ASSETS.neptune, color: 0x4B70DD, roughness: 0.5, tilt: 0.494, ecc: 0.009 }
 ];
@@ -208,7 +208,8 @@ const AnimatedBackground: React.FC = () => {
           emissiveIntensity: 0.12
         });
         const mesh = new THREE.Mesh(sphereGeom, mat);
-        mesh.scale.setScalar(data.radius * 2.5); 
+        const vScale = (data as any).visualScale ?? 2.5;
+        mesh.scale.setScalar(data.radius * vScale); 
         mesh.rotation.z = (data as any).tilt || 0;
         mesh.castShadow = true;
         mesh.receiveShadow = false; // PREVENT SELF-SHADOW ARTIFACTS
@@ -228,19 +229,21 @@ const AnimatedBackground: React.FC = () => {
             depthWrite: false
           });
           const clouds = new THREE.Mesh(sphereGeom, cloudMat);
-          clouds.scale.setScalar(data.radius * 2.5 * 1.02); // Match scaled planet
+          const vScale = (data as any).visualScale ?? 2.5;
+          clouds.scale.setScalar(data.radius * vScale * 1.02);
           planetGroup.add(clouds);
           (planetGroup as any).clouds = clouds;
         }
 
         // Rings (Saturn)
         if (data.ring) {
-          const ringGeom = new THREE.RingGeometry(data.radius * 2.5 * 1.4, data.radius * 2.5 * 2.5, 64);
+          const vScale = (data as any).visualScale ?? 2.5;
+          const ringGeom = new THREE.RingGeometry(data.radius * vScale * 1.4, data.radius * vScale * 2.5, 64);
           const uvs = ringGeom.attributes.uv;
           const v3 = new THREE.Vector3();
           for (let i = 0; i < uvs.count; i++) {
             v3.fromBufferAttribute(ringGeom.attributes.position, i);
-            uvs.setXY(i, (v3.length() - data.radius * 2.5 * 1.4) / (data.radius * 2.5 * 1.1), 0.5);
+            uvs.setXY(i, (v3.length() - data.radius * vScale * 1.4) / (data.radius * vScale * 1.1), 0.5);
           }
           const ringMat = new THREE.MeshStandardMaterial({
             map: loadTexture(data.ring),
@@ -258,13 +261,13 @@ const AnimatedBackground: React.FC = () => {
           planetGroup.add(ring);
           (planetGroup as any).ring = ring;
           const ringInner = new THREE.Mesh(
-            new THREE.RingGeometry(data.radius * 2.5 * 1.2, data.radius * 2.5 * 1.35, 64),
+            new THREE.RingGeometry(data.radius * vScale * 1.2, data.radius * vScale * 1.35, 64),
             new THREE.MeshStandardMaterial({ color: 0xcab27a, transparent: true, opacity: 0.35, roughness: 0.9 })
           );
           ringInner.rotation.x = ring.rotation.x;
           planetGroup.add(ringInner);
           const ringOuter = new THREE.Mesh(
-            new THREE.RingGeometry(data.radius * 2.5 * 2.55, data.radius * 2.5 * 2.8, 64),
+            new THREE.RingGeometry(data.radius * vScale * 2.55, data.radius * vScale * 2.8, 64),
             new THREE.MeshStandardMaterial({ color: 0xbda476, transparent: true, opacity: 0.25, roughness: 0.9 })
           );
           ringOuter.rotation.x = ring.rotation.x;
@@ -274,7 +277,8 @@ const AnimatedBackground: React.FC = () => {
         // Moon
         if (data.hasMoon) {
             const moonGroup = new THREE.Group();
-            moonGroup.position.set(data.radius * 2.5 * 3, 0, 0); // Adjusted for scale
+            const vScale = (data as any).visualScale ?? 2.5;
+            moonGroup.position.set(data.radius * vScale * 3, 0, 0);
             planetGroup.add(moonGroup);
             
             const moonMat = new THREE.MeshStandardMaterial({
@@ -283,7 +287,7 @@ const AnimatedBackground: React.FC = () => {
                 metalness: 0
             });
             const moon = new THREE.Mesh(sphereGeom, moonMat);
-            moon.scale.setScalar(data.radius * 2.5 * 0.27);
+            moon.scale.setScalar(data.radius * vScale * 0.27);
             moon.castShadow = true;
             moon.receiveShadow = true;
             moonGroup.add(moon);
@@ -292,10 +296,15 @@ const AnimatedBackground: React.FC = () => {
       });
 
       // 5. Camera Animation Logic
-      const getSmartCameraOffset = (planetPos: THREE.Vector3, planetRadius: number, type: 'close' | 'superClose' | 'wide' = 'close') => {
-        const scaledRadius = planetRadius * 2.5;
+      const getSmartCameraOffset = (planetId: string, planetPos: THREE.Vector3, type: 'close' | 'superClose' | 'wide' = 'close') => {
+        const meta = PLANET_DATA.find(p => p.id === planetId)!;
+        const vScale = (meta as any).visualScale ?? 2.5;
+        const scaledRadius = meta.radius * vScale;
         const fov = camera.fov * Math.PI / 180;
-        const coverage = type === 'superClose' ? 0.6 : type === 'close' ? 0.4 : 0.25;
+        let coverage = type === 'superClose' ? 0.6 : type === 'close' ? 0.4 : 0.25;
+        if (planetId === 'jupiter' || planetId === 'saturn') {
+          coverage = type === 'superClose' ? 0.5 : type === 'close' ? 0.35 : 0.22;
+        }
         const dist = (scaledRadius / Math.tan(fov / 2)) * (1 / coverage);
         const toSun = new THREE.Vector3(0, 0, 0).sub(planetPos).normalize();
         const angle = type === 'superClose' ? Math.PI / 5 : Math.PI / 6;
@@ -335,7 +344,7 @@ const AnimatedBackground: React.FC = () => {
           if(!planet) return;
           
           // Destination: "Close" view (Arrival)
-          const offset = getSmartCameraOffset(planet.position, PLANET_DATA.find(p => p.id === planetId)!.radius, 'close');
+          const offset = getSmartCameraOffset(planetId, planet.position, 'close');
           const finalPos = planet.position.clone().add(offset);
           const finalTarget = planet.position.clone();
 
@@ -363,7 +372,7 @@ const AnimatedBackground: React.FC = () => {
         if(!planet) return;
         
         // Destination: "SuperClose" view (Deep reading mode)
-        const offset = getSmartCameraOffset(planet.position, PLANET_DATA.find(p => p.id === planetId)!.radius, 'superClose');
+        const offset = getSmartCameraOffset(planetId, planet.position, 'superClose');
         const finalPos = planet.position.clone().add(offset);
         const finalTarget = planet.position.clone(); // Keep looking at planet center
 
