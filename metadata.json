@@ -1,0 +1,5 @@
+{
+  "name": "SolarDev - Interplanetary Portfolio",
+  "description": "A vanilla JS portfolio with a Three.js solar system, utilizing GSAP for cinematic scroll-based space travel.",
+  "requestFramePermissions": []
+}

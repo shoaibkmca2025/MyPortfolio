@@ -1,0 +1,48 @@
+
+import { Project, Skill } from './types';
+
+export const PROJECTS: Project[] = [
+  {
+    id: '1',
+    title: 'ParentConnect',
+    description: 'Multilingual Parent-Teacher Communication Portal. Implemented real-time language switching (English, Hindi, Marathi) and a dynamic parent dashboard for tracking progress.',
+    tech: ['Python', 'Django', 'MySQL', 'JavaScript', 'HTML', 'CSS'],
+    image: 'https://images.unsplash.com/photo-1577896851231-70ef1460375e?q=80&w=2670&auto=format&fit=crop',
+    category: 'Django'
+  },
+  {
+    id: '2',
+    title: 'Dream Forge API',
+    description: 'Developed scalable backend APIs and managed database integrations during an internship, focusing on front-end and back-end synergy using Python ecosystems.',
+    tech: ['Python', 'Django', 'REST API', 'MongoDB'],
+    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2670&auto=format&fit=crop',
+    category: 'Django'
+  },
+  {
+    id: '3',
+    title: 'GenAI Project Planner',
+    description: 'A conceptual AI-driven planning tool inspired by AWS Generative AI training, focused on streamlining development workflows.',
+    tech: ['React', 'Node.js', 'Generative AI', 'AWS'],
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2670&auto=format&fit=crop',
+    category: 'AI'
+  }
+];
+
+export const SKILLS: Skill[] = [
+  { name: 'Python', icon: 'fa-brands fa-python', level: 90, category: 'Language' },
+  { name: 'Django', icon: 'fa-solid fa-server', level: 85, category: 'Backend' },
+  { name: 'JavaScript', icon: 'fa-brands fa-square-js', level: 80, category: 'Language' },
+  { name: 'Java', icon: 'fa-brands fa-java', level: 75, category: 'Language' },
+  { name: 'C / C++', icon: 'fa-solid fa-code', level: 85, category: 'Language' },
+  { name: 'MongoDB', icon: 'fa-solid fa-database', level: 75, category: 'Backend' },
+  { name: 'MySQL', icon: 'fa-solid fa-database', level: 80, category: 'Backend' },
+  { name: 'React', icon: 'fa-brands fa-react', level: 70, category: 'Frontend' },
+  { name: 'Node.js', icon: 'fa-brands fa-node-js', level: 70, category: 'Backend' },
+  { name: 'HTML / CSS', icon: 'fa-brands fa-css3-alt', level: 90, category: 'Frontend' },
+];
+
+export const DEV_BIO = `
+I am Shoaib Khatik, a motivated and detail-oriented software developer based in Nashik, currently pursuing my MCA. 
+With a strong foundation in Python, Django, and Java, I specialize in building efficient and scalable web applications. 
+My experience includes multilingual portal development and professional database management across SQL and NoSQL environments.
+`;
