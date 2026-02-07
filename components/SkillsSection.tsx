@@ -46,5 +46,4 @@ const SkillsSection: React.FC = () => {
     </div>
   );
 };
-
 export default SkillsSection;

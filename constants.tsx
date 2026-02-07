@@ -7,7 +7,7 @@ export const PROJECTS: Project[] = [
     title: 'ParentConnect',
     description: 'Multilingual Parent-Teacher Communication Portal. Implemented real-time language switching (English, Hindi, Marathi) and a dynamic parent dashboard for tracking progress.',
     tech: ['Python', 'Django', 'MySQL', 'JavaScript', 'HTML', 'CSS'],
-    image: 'https://images.unsplash.com/photo-1577896851231-70ef1460375e?q=80&w=2670&auto=format&fit=crop',
+    image: 'https://picsum.photos/id/1011/1920/1080',
     category: 'Django'
   },
   {
@@ -15,7 +15,7 @@ export const PROJECTS: Project[] = [
     title: 'Dream Forge API',
     description: 'Developed scalable backend APIs and managed database integrations during an internship, focusing on front-end and back-end synergy using Python ecosystems.',
     tech: ['Python', 'Django', 'REST API', 'MongoDB'],
-    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2670&auto=format&fit=crop',
+    image: 'https://picsum.photos/id/1015/1920/1080',
     category: 'Django'
   },
   {
@@ -23,7 +23,7 @@ export const PROJECTS: Project[] = [
     title: 'GenAI Project Planner',
     description: 'A conceptual AI-driven planning tool inspired by AWS Generative AI training, focused on streamlining development workflows.',
     tech: ['React', 'Node.js', 'Generative AI', 'AWS'],
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2670&auto=format&fit=crop',
+    image: 'https://picsum.photos/id/1027/1920/1080',
     category: 'AI'
   }
 ];
@@ -45,8 +45,8 @@ export const EXPERIENCE = [
   {
     id: '1',
     role: 'Software Developer Intern',
-    company: 'Dream Forge Technologies',
-    period: '2023 - Present',
+    company: 'YSM Info Solutions',
+    period: '2026 - Present',
     description: 'Spearheaded the development of scalable backend APIs using Django and Python. Optimized database queries for MongoDB, reducing latency by 40%. Collaborated with frontend teams to integrate RESTful services.',
     type: 'work'
   },

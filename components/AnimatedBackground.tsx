@@ -4,25 +4,26 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
+gsap.ticker.lagSmoothing(0);
 
 // --- ASSETS (High-Res Textures) ---
 const ASSETS = {
-  sun: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/sun.jpg',
-  mercury: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/mercury.jpg',
-  venus: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/venus_surface.jpg',
-  venusAtmosphere: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/venus_atmosphere.jpg',
-  earth: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg',
-  earthSpec: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg',
-  earthNormal: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg',
-  earthClouds: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_2048.png',
-  mars: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/mars_1k_color.jpg',
-  marsNormal: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/mars_1k_normal.jpg',
-  jupiter: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/jupiter_1k_color.jpg',
-  saturn: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/saturn_1k_color.jpg',
-  saturnRing: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/saturn_ring_alpha.png',
-  uranus: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/uranus_color.jpg',
-  neptune: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/neptune_1k_color.jpg',
-  moon: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg'
+  sun: 'https://threejs.org/examples/textures/planets/sun.jpg',
+  mercury: 'https://threejs.org/examples/textures/planets/mercury.jpg',
+  venus: 'https://threejs.org/examples/textures/planets/venus_surface.jpg',
+  venusAtmosphere: 'https://threejs.org/examples/textures/planets/venus_atmosphere.jpg',
+  earth: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
+  earthSpec: 'https://threejs.org/examples/textures/planets/earth_specular_2048.jpg',
+  earthNormal: 'https://threejs.org/examples/textures/planets/earth_normal_2048.jpg',
+  earthClouds: 'https://threejs.org/examples/textures/planets/earth_clouds_2048.png',
+  mars: 'https://threejs.org/examples/textures/planets/mars_1k_color.jpg',
+  marsNormal: 'https://threejs.org/examples/textures/planets/mars_1k_normal.jpg',
+  jupiter: 'https://threejs.org/examples/textures/planets/jupiter_1k_color.jpg',
+  saturn: 'https://threejs.org/examples/textures/planets/saturn_1k_color.jpg',
+  saturnRing: 'https://threejs.org/examples/textures/planets/saturn_ring_alpha.png',
+  uranus: 'https://threejs.org/examples/textures/planets/uranus_color.jpg',
+  neptune: 'https://threejs.org/examples/textures/planets/neptune_1k_color.jpg',
+  moon: 'https://threejs.org/examples/textures/planets/moon_1024.jpg'
 };
 
 // --- REAL WORLD DATA (Scaled) ---
@@ -77,7 +78,7 @@ const AnimatedBackground: React.FC = () => {
         powerPreference: "high-performance"
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -97,9 +98,7 @@ const AnimatedBackground: React.FC = () => {
           tex.wrapT = THREE.ClampToEdgeWrapping;
           tex.minFilter = THREE.LinearMipMapLinearFilter;
           tex.magFilter = THREE.LinearFilter;
-        }, undefined, (err) => {
-          console.error(`Failed to load texture: ${url}`, err);
-        });
+        }, undefined, () => {});
       };
 
       textureLoader.setCrossOrigin('anonymous');
@@ -390,16 +389,9 @@ const AnimatedBackground: React.FC = () => {
           tx: sunView.target.x, ty: sunView.target.y, tz: sunView.target.z
       };
 
-      const lastPos = new THREE.Vector3().copy(sunView.pos);
-      const lastTarget = new THREE.Vector3().copy(sunView.target);
       const updateCamera = () => {
-          const speed = Math.abs(((ScrollTrigger as any).getVelocity?.() || 0));
-          // ENHANCED SMOOTHING: Balanced alpha (0.12) for snappy response during auto-scroll
-          const alpha = 0.12 + Math.min(speed * 0.0003, 0.2);
-          lastPos.lerp(new THREE.Vector3(camState.px, camState.py, camState.pz), alpha);
-          lastTarget.lerp(new THREE.Vector3(camState.tx, camState.ty, camState.tz), alpha);
-          camera.position.copy(lastPos);
-          camera.lookAt(lastTarget);
+          camera.position.set(camState.px, camState.py, camState.pz);
+          camera.lookAt(camState.tx, camState.ty, camState.tz);
       };
 
       // Fly to a planet (Transition via Spacer)
@@ -420,7 +412,7 @@ const AnimatedBackground: React.FC = () => {
                   trigger: triggerId,
                   start: "top bottom", // Start flying as soon as spacer enters view
                   end: "bottom top",   // Finish flying when spacer leaves view
-                  scrub: 0.6,          // Reduced from 1.0 for tighter control
+                  scrub: 0.2,          // Reduced from 0.6 to 0.2 for instant responsiveness
                   anticipatePin: 1,
                   invalidateOnRefresh: true,
               },
@@ -448,7 +440,7 @@ const AnimatedBackground: React.FC = () => {
                 trigger: triggerId,
                 start: "top bottom", // Start zooming in earlier
                 end: "center center", // Fully zoomed when content is centered
-                scrub: 0.6,           // Reduced from 1.0 for tighter control
+                scrub: 0.4,           // Reduced from 0.6 to 0.4 for smoother but faster zoom
                 invalidateOnRefresh: true,
             },
             immediateRender: false,
@@ -462,7 +454,7 @@ const AnimatedBackground: React.FC = () => {
             trigger: triggerId,
             start: "top center",
             end: "bottom center",
-            scrub: 0.2,
+            scrub: 0.1,
             anticipatePin: 1,
             invalidateOnRefresh: true,
           },
