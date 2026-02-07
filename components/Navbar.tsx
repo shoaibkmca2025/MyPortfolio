@@ -36,14 +36,24 @@ const Navbar: React.FC = () => {
     
     const element = document.getElementById(id);
     if (element) {
+      // Calculate dynamic duration based on distance
+      const currentY = window.scrollY;
+      const targetY = element.getBoundingClientRect().top + window.scrollY;
+      const distance = Math.abs(targetY - currentY);
+      // Min 1.2s, Max 2.5s. Roughly 1s per 2500px
+      const duration = Math.min(2.5, Math.max(1.2, distance / 2000));
+
       gsap.to(window, {
-        duration: 2,
+        duration: duration,
         scrollTo: { y: element, autoKill: false },
-        ease: "power3.inOut"
+        ease: "power2.inOut" // Smoother easing than power3
       });
       setMobileMenuOpen(false);
     } else if (id === 'hero') {
-      gsap.to(window, { duration: 2, scrollTo: 0, ease: "power3.inOut" });
+      const distance = window.scrollY;
+      const duration = Math.min(2.5, Math.max(1.2, distance / 2000));
+      
+      gsap.to(window, { duration: duration, scrollTo: 0, ease: "power2.inOut" });
       setMobileMenuOpen(false);
     }
   };

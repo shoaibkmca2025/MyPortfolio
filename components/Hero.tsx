@@ -5,14 +5,55 @@ const Hero: React.FC = () => {
   const handleCtaClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const target = document.getElementById('about');
-    if (target) {
-      gsap.to(window, {
-        duration: 2.5,
-        scrollTo: { y: target, autoKill: false },
-        ease: "power4.inOut"
-      });
-    }
+    
+    // TOUR: Visit every planet/section with a 4-second observation stop
+    const tourStops = [
+      'mercury', 
+      'venus', 
+      'about',          // Earth
+      'skills',         // Mars
+      'spacer-skills-projects', // Experience (Asteroid Belt)
+      'projects',       // Jupiter
+      'projects-saturn',// Saturn
+      'uranus',
+      'contact'         // Neptune
+    ];
+
+    // Create a timeline for the guided tour
+    const tl = gsap.timeline({
+      onComplete: () => cleanupTour()
+    });
+
+    // Function to stop the tour if user interrupts
+    const killTour = () => {
+      tl.kill(); // Stop the timeline immediately
+      cleanupTour();
+    };
+
+    const cleanupTour = () => {
+      window.removeEventListener('wheel', killTour);
+      window.removeEventListener('touchstart', killTour);
+      window.removeEventListener('keydown', killTour);
+    };
+
+    // Listen for user interaction to cancel autopilot
+    window.addEventListener('wheel', killTour);
+    window.addEventListener('touchstart', killTour);
+    window.addEventListener('keydown', killTour);
+
+    tourStops.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        // 1. Travel to the section
+        tl.to(window, {
+          duration: 2.5,
+          scrollTo: { y: element, autoKill: false }, // We handle kill manually
+          ease: "power2.inOut"
+        });
+        // 2. Hover/Observe for 4 seconds
+        tl.to({}, { duration: 4 });
+      }
+    });
   };
 
   return (

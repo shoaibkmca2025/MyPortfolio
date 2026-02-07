@@ -41,6 +41,33 @@ export const SKILLS: Skill[] = [
   { name: 'HTML / CSS', icon: 'fa-brands fa-css3-alt', level: 90, category: 'Frontend' },
 ];
 
+export const EXPERIENCE = [
+  {
+    id: '1',
+    role: 'Software Developer Intern',
+    company: 'Dream Forge Technologies',
+    period: '2023 - Present',
+    description: 'Spearheaded the development of scalable backend APIs using Django and Python. Optimized database queries for MongoDB, reducing latency by 40%. Collaborated with frontend teams to integrate RESTful services.',
+    type: 'work'
+  },
+  {
+    id: '2',
+    role: 'Master of Computer Applications (MCA)',
+    company: 'Dr. Moonje Institute, Nashik',
+    period: '2023 - 2025',
+    description: 'Specializing in Full Stack Development and AI. Leading the student developer club and organizing hackathons.',
+    type: 'education'
+  },
+  {
+    id: '3',
+    role: 'Bachelor of Computer Applications (BCA)',
+    company: 'Sandip University',
+    period: '2020 - 2023',
+    description: 'Graduated with Distinction. Built "ParentConnect" as a final year capstone project.',
+    type: 'education'
+  }
+];
+
 export const DEV_BIO = `
 I am Shoaib Khatik, a motivated and detail-oriented software developer based in Nashik, currently pursuing my MCA. 
 With a strong foundation in Python, Django, and Java, I specialize in building efficient and scalable web applications. 

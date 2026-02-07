@@ -5,6 +5,8 @@ import SkillsSection from './components/SkillsSection';
 import ProjectCard from './components/ProjectCard';
 import AIChat from './components/AIChat';
 import AnimatedBackground from './components/AnimatedBackground';
+import ExperienceSection from './components/ExperienceSection';
+import PlanetSection from './components/PlanetSection';
 import { PROJECTS, DEV_BIO } from './constants';
 
 const App: React.FC = () => {
@@ -24,8 +26,42 @@ const App: React.FC = () => {
           <Hero />
         </section>
 
-        {/* SPACER: Sun -> Earth */}
-        <div id="spacer-hero-about" className="h-[150vh]"></div>
+        {/* SPACER: Sun -> Mercury */}
+        <div id="spacer-hero-mercury" className="h-[100vh]"></div>
+
+        {/* MERCURY SECTION */}
+        <section id="mercury" className="min-h-screen flex items-center py-32 px-6">
+          <PlanetSection 
+            title="System Diagnostics"
+            subtitle="Efficiency.log"
+            description="High-velocity performance optimization. Just as Mercury orbits rapidly, I prioritize sub-100ms latency and efficient algorithms in every application."
+            align="right"
+            stats={[
+              { label: "Avg. Latency", value: "< 50ms" },
+              { label: "Uptime", value: "99.9%" }
+            ]}
+          />
+        </section>
+
+        {/* SPACER: Mercury -> Venus */}
+        <div id="spacer-mercury-venus" className="h-[100vh]"></div>
+
+        {/* VENUS SECTION */}
+        <section id="venus" className="min-h-screen flex items-center py-32 px-6">
+          <PlanetSection 
+            title="Visual Atmosphere"
+            subtitle="Aesthetics.css"
+            description="Designing immersive user experiences that captivate like Venus's atmosphere. Utilizing Tailwind CSS and Framer Motion to create stunning, responsive interfaces."
+            align="left"
+            stats={[
+              { label: "UX Score", value: "A+" },
+              { label: "Accessibility", value: "100%" }
+            ]}
+          />
+        </section>
+
+        {/* SPACER: Venus -> Earth */}
+        <div id="spacer-venus-earth" className="h-[100vh]"></div>
 
         {/* ABOUT - EARTH */}
         <section id="about" className="min-h-screen flex items-center justify-center py-64 max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-16">
@@ -62,8 +98,10 @@ const App: React.FC = () => {
           <SkillsSection />
         </section>
 
-        {/* SPACER: Mars -> Jupiter */}
-        <div id="spacer-skills-projects" className="h-[150vh]"></div>
+        {/* EXPERIENCE - ASTEROID BELT */}
+        <section id="spacer-skills-projects" className="min-h-[150vh] flex items-center py-32 px-6 relative">
+          <ExperienceSection />
+        </section>
 
         {/* PROJECTS - JUPITER */}
         <section id="projects" className="min-h-screen py-64 px-6 relative">
@@ -90,8 +128,25 @@ const App: React.FC = () => {
             </div>
         </div>
 
-        {/* SPACER: Saturn -> Neptune */}
-        <div id="spacer-saturn-contact" className="h-[150vh]"></div>
+        {/* SPACER: Saturn -> Uranus */}
+        <div id="spacer-saturn-uranus" className="h-[100vh]"></div>
+
+        {/* URANUS SECTION */}
+        <section id="uranus" className="min-h-screen flex items-center py-32 px-6">
+          <PlanetSection 
+            title="Future Horizons"
+            subtitle="R&D.lab"
+            description="Exploring the unknown. Investigating Generative AI, WebGL, and Next-Gen architectures to stay ahead of the curve, much like Uranus's unique tilt."
+            align="right"
+            stats={[
+              { label: "Innovation", value: "High" },
+              { label: "Learning", value: "Constant" }
+            ]}
+          />
+        </section>
+
+        {/* SPACER: Uranus -> Neptune */}
+        <div id="spacer-uranus-neptune" className="h-[100vh]"></div>
 
         {/* CONTACT - NEPTUNE */}
         <section id="contact" className="min-h-screen py-64 px-6 relative overflow-hidden flex items-center">

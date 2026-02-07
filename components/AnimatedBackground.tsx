@@ -67,12 +67,13 @@ const AnimatedBackground: React.FC = () => {
     let ctx = gsap.context(() => {
       // 1. Scene Setup
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 30000);
+      // FIXED: Reduced near plane to 0.1 to prevent clipping on extreme close-ups
+      const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 30000);
       
       const renderer = new THREE.WebGLRenderer({ 
         antialias: true, 
         alpha: false,
-        logarithmicDepthBuffer: false,
+        logarithmicDepthBuffer: true, // FIXED: Prevents Z-fighting/flickering at large distances
         powerPreference: "high-performance"
       });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -122,6 +123,67 @@ const AnimatedBackground: React.FC = () => {
       const stars = new THREE.Points(starGeom, starMat);
       starGroup.add(stars);
 
+      // --- ADDED: Shooting Stars ---
+      const shootingStars: { mesh: THREE.Mesh, speed: number, direction: THREE.Vector3, life: number }[] = [];
+      const shootingStarGeom = new THREE.CylinderGeometry(0, 0.5, 20, 4);
+      const shootingStarMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+      shootingStarGeom.rotateZ(Math.PI / 2); // Orient along X-axis
+
+      const spawnShootingStar = () => {
+        const mesh = new THREE.Mesh(shootingStarGeom, shootingStarMat);
+        const r = 2000; // Spawn distance
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        
+        mesh.position.set(
+          r * Math.sin(phi) * Math.cos(theta),
+          r * Math.sin(phi) * Math.sin(theta),
+          r * Math.cos(phi)
+        );
+        mesh.lookAt(0, 0, 0); // Aim towards center roughly
+        
+        // Random velocity tangent to sphere surface
+        const speed = 10 + Math.random() * 20;
+        const direction = new THREE.Vector3().randomDirection().cross(mesh.position).normalize();
+        
+        scene.add(mesh);
+        shootingStars.push({ mesh, speed, direction, life: 100 + Math.random() * 50 });
+      };
+
+      // --- ADDED: Asteroid Belt (Between Mars and Jupiter) ---
+      const asteroidCount = 800;
+      const asteroidGeom = new THREE.DodecahedronGeometry(0.8, 0); // Low poly rock
+      const asteroidMat = new THREE.MeshStandardMaterial({ 
+        color: 0x888888, 
+        roughness: 0.9, 
+        flatShading: true 
+      });
+      const asteroidMesh = new THREE.InstancedMesh(asteroidGeom, asteroidMat, asteroidCount);
+      const dummy = new THREE.Object3D();
+      
+      for (let i = 0; i < asteroidCount; i++) {
+        // Belt Radius: 220 to 280 (Between Mars=170 and Jupiter=320)
+        const radius = 220 + Math.random() * 60; 
+        const angle = Math.random() * Math.PI * 2;
+        const yOffset = (Math.random() - 0.5) * 10; // Slight vertical spread
+        
+        dummy.position.set(
+          Math.cos(angle) * radius,
+          yOffset,
+          Math.sin(angle) * radius
+        );
+        
+        dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        const scale = 0.5 + Math.random() * 2.5; // Random sizes
+        dummy.scale.set(scale, scale, scale);
+        
+        dummy.updateMatrix();
+        asteroidMesh.setMatrixAt(i, dummy.matrix);
+      }
+      asteroidMesh.castShadow = true;
+      asteroidMesh.receiveShadow = true;
+      scene.add(asteroidMesh);
+
       // 3. Sun (Center)
       const sunGroup = new THREE.Group();
       scene.add(sunGroup);
@@ -157,7 +219,7 @@ const AnimatedBackground: React.FC = () => {
       sunLight.castShadow = true;
       sunLight.shadow.mapSize.width = 4096;
       sunLight.shadow.mapSize.height = 4096;
-      sunLight.shadow.bias = -0.0001; // Reduced bias
+      sunLight.shadow.bias = -0.0005; // FIXED: Reduced shadow acne/flickering
       sunGroup.add(sunLight);
       
       // Ambient Light (Global Illumination) - Bright White for safety
@@ -167,7 +229,7 @@ const AnimatedBackground: React.FC = () => {
       scene.add(hemiLight);
 
       // Camera Headlight (Always illuminates the front of the planet)
-      const camLight = new THREE.PointLight(0xffffff, 0.8, 0, 0);
+      const camLight = new THREE.PointLight(0xffffff, 1.5, 0, 0); // Increased intensity, no decay
       camera.add(camLight);
       scene.add(camera); // Add camera to scene so light works
 
@@ -301,9 +363,10 @@ const AnimatedBackground: React.FC = () => {
         const vScale = (meta as any).visualScale ?? 2.5;
         const scaledRadius = meta.radius * vScale;
         const fov = camera.fov * Math.PI / 180;
-        let coverage = type === 'superClose' ? 0.6 : type === 'close' ? 0.4 : 0.25;
+        // ENHANCED ZOOM: Increased coverage values for stronger zoom
+        let coverage = type === 'superClose' ? 0.85 : type === 'close' ? 0.6 : 0.25;
         if (planetId === 'jupiter' || planetId === 'saturn') {
-          coverage = type === 'superClose' ? 0.5 : type === 'close' ? 0.35 : 0.22;
+          coverage = type === 'superClose' ? 0.75 : type === 'close' ? 0.5 : 0.22;
         }
         const dist = (scaledRadius / Math.tan(fov / 2)) * (1 / coverage);
         const toSun = new THREE.Vector3(0, 0, 0).sub(planetPos).normalize();
@@ -331,7 +394,8 @@ const AnimatedBackground: React.FC = () => {
       const lastTarget = new THREE.Vector3().copy(sunView.target);
       const updateCamera = () => {
           const speed = Math.abs(((ScrollTrigger as any).getVelocity?.() || 0));
-          const alpha = 0.25 + Math.min(speed * 0.0003, 0.35);
+          // ENHANCED SMOOTHING: Balanced alpha (0.12) for snappy response during auto-scroll
+          const alpha = 0.12 + Math.min(speed * 0.0003, 0.2);
           lastPos.lerp(new THREE.Vector3(camState.px, camState.py, camState.pz), alpha);
           lastTarget.lerp(new THREE.Vector3(camState.tx, camState.ty, camState.tz), alpha);
           camera.position.copy(lastPos);
@@ -354,9 +418,9 @@ const AnimatedBackground: React.FC = () => {
               ease: "none", 
               scrollTrigger: {
                   trigger: triggerId,
-                  start: "top top",
-                  end: "bottom bottom",
-                  scrub: 0.2,
+                  start: "top bottom", // Start flying as soon as spacer enters view
+                  end: "bottom top",   // Finish flying when spacer leaves view
+                  scrub: 0.6,          // Reduced from 1.0 for tighter control
                   anticipatePin: 1,
                   invalidateOnRefresh: true,
               },
@@ -382,10 +446,9 @@ const AnimatedBackground: React.FC = () => {
             ease: "none",
             scrollTrigger: {
                 trigger: triggerId,
-                start: "top center",
-                end: "bottom center",
-                scrub: 0.2,
-                anticipatePin: 1,
+                start: "top bottom", // Start zooming in earlier
+                end: "center center", // Fully zoomed when content is centered
+                scrub: 0.6,           // Reduced from 1.0 for tighter control
                 invalidateOnRefresh: true,
             },
             immediateRender: false,
@@ -408,54 +471,38 @@ const AnimatedBackground: React.FC = () => {
       };
 
       // --- REGISTER SCROLL TRIGGERS ---
-      // 1. Hero -> About (Sun -> Earth)
-      registerFlyTo('earth', '#spacer-hero-about');
-      registerExploration('earth', '#about'); // Zoom in while reading About
-
-      // 2. About -> Skills (Earth -> Mars)
-      registerFlyTo('mars', '#spacer-about-skills');
-      registerExploration('mars', '#skills'); // Zoom in while reading Skills
-
-      // 3. Skills -> Projects (Mars -> Jupiter)
-      registerFlyTo('jupiter', '#spacer-skills-projects');
-      registerExploration('jupiter', '#projects'); // Zoom in while reading Projects
-
-      // 4. Projects -> Saturn (Jupiter -> Saturn)
-      // Saturn is unique as it is inside a spacer-like div, but we treat it as a destination
-      registerFlyTo('saturn', '#projects-saturn'); 
-      const registerOrbitAround = (planetId: string, triggerId: string) => {
-        const planet = planets[planetId];
-        if (!planet) return;
-        const state = { a: 0 };
-        const baseRadius = PLANET_DATA.find(p => p.id === planetId)!.radius;
-        const scaledRadius = baseRadius * 2.5;
-        const orbitR = scaledRadius * 3.2;
-        gsap.to(state, {
-          a: Math.PI * 1.5,
-          ease: "none",
-          scrollTrigger: {
-            trigger: triggerId,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1
-          },
-          onUpdate: () => {
-            const center = (planet as any).position.clone();
-            const toSun = new THREE.Vector3(0, 0, 0).sub(center).normalize();
-            const dir = toSun.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), state.a);
-            const elevation = scaledRadius * 0.4;
-            const pos = center.clone().add(dir.multiplyScalar(orbitR)).add(new THREE.Vector3(0, elevation, 0));
-            camState.px = pos.x; camState.py = pos.y; camState.pz = pos.z;
-            camState.tx = center.x; camState.ty = center.y; camState.tz = center.z;
-            updateCamera();
-          }
-        });
-      };
-      registerOrbitAround('saturn', '#projects-saturn');
       
-      // 5. Saturn -> Contact (Saturn -> Neptune)
-      registerFlyTo('neptune', '#spacer-saturn-contact');
-      registerExploration('neptune', '#contact'); // Zoom in while reading Contact
+      // 1. Hero -> Mercury (Sun -> Mercury)
+      registerFlyTo('mercury', '#spacer-hero-mercury');
+      registerExploration('mercury', '#mercury');
+
+      // 2. Mercury -> Venus
+      registerFlyTo('venus', '#spacer-mercury-venus');
+      registerExploration('venus', '#venus');
+
+      // 3. Venus -> Earth
+      registerFlyTo('earth', '#spacer-venus-earth');
+      registerExploration('earth', '#about'); // Earth is the About section
+
+      // 4. Earth -> Mars
+      registerFlyTo('mars', '#spacer-about-skills');
+      registerExploration('mars', '#skills'); // Mars is the Skills section
+
+      // 5. Mars -> Jupiter
+      registerFlyTo('jupiter', '#spacer-skills-projects');
+      registerExploration('jupiter', '#projects'); // Jupiter is the Projects section
+
+      // 6. Jupiter -> Saturn
+      registerFlyTo('saturn', '#projects-saturn'); 
+      // Saturn is unique, it's a spacer-like section, so we just fly to it.
+      
+      // 7. Saturn -> Uranus
+      registerFlyTo('uranus', '#spacer-saturn-uranus');
+      registerExploration('uranus', '#uranus');
+
+      // 8. Uranus -> Neptune
+      registerFlyTo('neptune', '#spacer-uranus-neptune');
+      registerExploration('neptune', '#contact'); // Neptune is the Contact section
 
 
       // 6. Animation Loop
@@ -514,6 +561,24 @@ const AnimatedBackground: React.FC = () => {
         // Rotate Sun
         sunMesh.rotation.y += 0.002;
         sunGlow.rotation.z -= 0.001;
+
+        // Rotate Asteroid Belt
+        asteroidMesh.rotation.y += 0.0005;
+
+        // Update Shooting Stars
+        if (Math.random() < 0.02) spawnShootingStar();
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          const s = shootingStars[i];
+          s.mesh.position.addScaledVector(s.direction, s.speed);
+          s.mesh.scale.z = Math.min(30, s.speed * 3); // Stretch based on speed
+          s.life -= 1;
+          s.mesh.opacity = Math.min(1, s.life / 20);
+          (s.mesh.material as THREE.Material).opacity = Math.min(1, s.life / 20);
+          if (s.life <= 0) {
+            scene.remove(s.mesh);
+            shootingStars.splice(i, 1);
+          }
+        }
 
         // Rotate Planets
         const t = performance.now() * 0.00005;
